@@ -1,16 +1,16 @@
 var mark = {
     separator : [',', '###'],
 	page : ['Showing', ' ', ' results</p><div id="dms">'],
-	listSource : ['Uploader</th></tr>', '</td></tr></table></div></div>'],
-	intercept : ['<td class="gl1c glcat">', "pages</div></td></tr>"],
+	listSource : ['Uploader</th></tr>', '</tr></table><table '],
+	intercept : ['<td class="gl1c glcat">', "pages</div></td>"],
 	name : ['<div class="glink">', '</div><div><div class="gt"', '</div><div>&nbsp;</div></a>'],
 	url : [')"><a href="', '"><div class="glink">', ",'", "')"],
 	coverUrl : ['" src="', '" /></div>', 'data-src="', '.jpg" />'],
 	date : ['" id="posted_', '/div><div class="ir" style="background-position', '">', '<'],
-	type : ["document.location='https://exhentai.org/", '/div></td><td class="gl2c">', '">', '<'],
-	filenum : ['https://exhentai.org/uploader/', 'pages</div>', '</a></div><div>', ' '],
+	type : ["document.location='https://e", '/div></td><td class="gl2c">', '">', '<'],
+	filenum : ['hentai.org/uploader/', 'pages</div>', '</a></div><div>', ' '],
 	btUrl : ["return popUp('", "', 610, 590)"],
-	uploader : ['exhentai.org/uploader', 'pages</div></td></tr>', '>', '<'],
+	uploader : ['hentai.org/uploader', 'pages</div></td>', '>', '<'],
 	tags : ['<div><div class="gt" ', '</div></div></a></td>', 'title="', '">'],
 	rate_position: ['<div class="ir" style="background-position:', ';opacity:'],
 	rate_mapping: {
@@ -76,7 +76,7 @@ function pageInfo(source){
 	return count + mark.separator[0] + (parseInt(count) % 25 == 0 ? parseInt(count / 25) : parseInt(count / 25) + 1);
 }
     
-function parse(source, openhttps){
+function parse(source){
 	if(source.indexOf(mark.listSource[0]) != -1){
 		var page = pageInfo(source);
 		source = interceptFromSource(source, mark.listSource[0], mark.listSource[1]);
@@ -84,6 +84,7 @@ function parse(source, openhttps){
 		var prefix = mark.intercept[1];
 		var i = 0;
 		while(source.indexOf(mark.intercept[0]) != -1){
+			if(i == 25) break;
 			var task = {};
 			task.name = interceptFromSource(source, mark.name[0], mark.name[1]);
 			if(task.name.indexOf(mark.name[2]) != -1){
@@ -91,23 +92,15 @@ function parse(source, openhttps){
 			}
 			
 			task.url = interceptFromSource(source, mark.url[0], mark.url[1]);
-			if(! openhttps){
-				task.url = task.url.replace("https", "http");
-			}
+			
 			task.rating = mark.rate_mapping[interceptFromSource(source, mark.rate_position[0], mark.rate_position[1])];
 			if(i == 0){
-				task.coverUrl = interceptFromSource(source, mark.coverUrl[0], mark.coverUrl[1]);
-				if(! openhttps){
-					task.coverUrl = task.coverUrl.replace("https", "http");
-				}
+				task.coverUrl = interceptFromSource(source, mark.coverUrl[0], mark.coverUrl[1]);	
 			}else{
-				task.coverUrl = interceptFromSource(source, mark.coverUrl[2], mark.coverUrl[3]) + ".jpg";
-				if(! openhttps){
-					task.coverUrl = task.coverUrl.replace("https", "http");
-				}
+				task.coverUrl = interceptFromSource(source, mark.coverUrl[2], mark.coverUrl[3]) + ".jpg";			
 			}
 			if(task.coverUrl){
-				task.coverUrl = task.coverUrl.replace("250.jpg", "l.jpg");
+				task.coverUrl = task.coverUrl.replace("250.jpg", "l.jpg").replace("https://ehgt.org", "http://ehgt.org");
 			}
 			task.date = interceptFromSource(source, mark.date[0], mark.date[1]).replace("<s>", "").replace("</s>", "");
 			task.date = interceptFromSource(task.date, mark.date[2], mark.date[3]);
@@ -142,5 +135,4 @@ function parse(source, openhttps){
 		return null;
 	}
 }       
-var openhttps = ("undefined" != typeof version && "undefined" != typeof https && https);
-parse(htmlSource, openhttps);
+parse(htmlSource);
